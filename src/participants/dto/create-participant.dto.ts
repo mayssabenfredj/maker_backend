@@ -4,6 +4,8 @@ import {
   IsString,
   IsEmail,
   IsDateString,
+  IsMongoId,
+  ValidateIf,
 } from 'class-validator';
 
 export class CreateParticipantDto {
@@ -38,4 +40,15 @@ export class CreateParticipantDto {
   @IsString()
   @IsOptional()
   country?: string;
+
+  // Participant can belong to either an event OR a workshop, not both
+  @IsMongoId()
+  @IsOptional()
+  @ValidateIf((o) => !o.workshop) // Only validate if workshop is not provided
+  event?: string;
+
+  @IsMongoId()
+  @IsOptional()
+  @ValidateIf((o) => !o.event) // Only validate if event is not provided
+  workshop?: string;
 }
