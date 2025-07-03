@@ -7,12 +7,21 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './entities/user.entity';
-import { CreateUserDto, LoginUserDto, UserResponseDto } from './dto/login.dto';
+import {
+  CreateUserDto,
+  LoginUserDto,
+  UserResponseDto,
+  LoginResponseDto,
+} from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     try {
@@ -49,7 +58,7 @@ export class UserService {
       }
 
       // Compare password using the schema method
-      const isPasswordValid = await user.comparePassword(password);
+      const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         return null;
       }
@@ -60,7 +69,7 @@ export class UserService {
     }
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<UserResponseDto> {
+  async login(loginUserDto: LoginUserDto): Promise<LoginResponseDto> {
     const user = await this.validateUser(
       loginUserDto.email,
       loginUserDto.password,
@@ -68,7 +77,12 @@ export class UserService {
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    return user;
+
+    const payload = { email: user.email, sub: user.id };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user,
+    };
   }
 
   async findById(id: string): Promise<UserResponseDto> {

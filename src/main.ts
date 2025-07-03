@@ -14,7 +14,7 @@ async function bootstrap() {
     .setTitle('Maker Skills API')
     .setDescription('Documentation for the Maker Skills API')
     .setVersion('0.1.0')
-    // .addBearerAuth() // if you use JWT authentication
+    .addBearerAuth() // if you use JWT authentication
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
