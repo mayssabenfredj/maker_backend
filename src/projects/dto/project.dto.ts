@@ -11,6 +11,7 @@ import {
   Min,
   Max,
   IsIn,
+  IsMongoId,
 } from 'class-validator';
 
 const validStatuses = [
@@ -84,14 +85,13 @@ export class CreateProjectDto {
   technologies: string[];
 
   @ApiProperty({
-    description: 'Project categories/tags',
-    example: ['IoT', 'Industrial', 'Monitoring'],
+    description: 'Array of category IDs',
+    example: ['64c9e4e5a88f3f001f7d8a9a', '64c9e4e5a88f3f001f7d8a9b'],
     type: [String],
     required: true,
   })
   @IsArray()
-  @IsString({ each: true })
-  @IsNotEmpty()
+  @IsMongoId({ each: true })
   categories: string[];
 
   @ApiProperty({
