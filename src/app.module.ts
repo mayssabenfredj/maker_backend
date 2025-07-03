@@ -17,10 +17,22 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env', '.env.local'], // Load environment variables from these files
+    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
+    }),
+    MongooseModule.forRootAsync({
+      useFactory: () => {
+        console.log('MONGODB_USER:', process.env.MONGODB_USER);
+        console.log('MONGODB_PASSWORD:', process.env.MONGODB_PASSWORD);
+        return {
+          uri: `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@makerskills.ad4zvlg.mongodb.net/?retryWrites=true&w=majority&appName=makerskills`,
+        };
+      },
     }),
     MongooseModule.forRoot(
       `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@makerskills.ad4zvlg.mongodb.net/?retryWrites=true&w=majority&appName=makerskills`,
