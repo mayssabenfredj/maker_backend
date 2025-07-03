@@ -12,18 +12,18 @@ export class CreateUserDto {
     description: 'User email address',
     example: 'user@example.com',
   })
-  @IsEmail({}, { message: 'Please provide a valid email address' })
-  @IsNotEmpty({ message: 'Email is required' })
+  @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @ApiProperty({
-    description: 'User password (minimum 6 characters)',
-    example: 'password123',
-    minLength: 6,
+    description: 'User password (min 8 characters)',
+    example: 'securePassword123',
+    minLength: 8,
   })
-  @IsString({ message: 'Password must be a string' })
-  @MinLength(6, { message: 'Password must be at least 6 characters long' })
-  @IsNotEmpty({ message: 'Password is required' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
   password: string;
 
   @ApiProperty({
@@ -31,8 +31,8 @@ export class CreateUserDto {
     example: 'John Doe',
     required: false,
   })
+  @IsString()
   @IsOptional()
-  @IsString({ message: 'Name must be a string' })
   name?: string;
 }
 
@@ -41,16 +41,16 @@ export class LoginUserDto {
     description: 'User email address',
     example: 'user@example.com',
   })
-  @IsEmail({}, { message: 'Please provide a valid email address' })
-  @IsNotEmpty({ message: 'Email is required' })
+  @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @ApiProperty({
     description: 'User password',
-    example: 'password123',
+    example: 'securePassword123',
   })
-  @IsString({ message: 'Password must be a string' })
-  @IsNotEmpty({ message: 'Password is required' })
+  @IsString()
+  @IsNotEmpty()
   password: string;
 }
 
@@ -70,6 +70,7 @@ export class UserResponseDto {
   @ApiProperty({
     description: 'User full name',
     example: 'John Doe',
+    required: false,
   })
   name?: string;
 
@@ -84,4 +85,18 @@ export class UserResponseDto {
     example: '2023-01-01T00:00:00.000Z',
   })
   updatedAt: Date;
+}
+
+export class LoginResponseDto {
+  @ApiProperty({
+    description: 'JWT access token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  access_token: string;
+
+  @ApiProperty({
+    description: 'User information',
+    type: UserResponseDto,
+  })
+  user: UserResponseDto;
 }
