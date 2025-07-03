@@ -16,7 +16,7 @@ export class Participant extends Document {
   @Prop({ required: true })
   lastName: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   email: string;
 
   @Prop()
@@ -52,9 +52,11 @@ export class Participant extends Document {
 export const ParticipantSchema = SchemaFactory.createForClass(Participant);
 
 // Add validation to ensure participant belongs to either event OR workshop, not both
-ParticipantSchema.pre('save', function(next) {
+ParticipantSchema.pre('save', function (next) {
   if (this.event && this.workshop) {
-    next(new Error('Participant cannot belong to both an event and a workshop'));
+    next(
+      new Error('Participant cannot belong to both an event and a workshop'),
+    );
   } else if (!this.event && !this.workshop) {
     next(new Error('Participant must belong to either an event or a workshop'));
   } else {
