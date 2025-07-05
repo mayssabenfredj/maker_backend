@@ -16,8 +16,11 @@ export class Product extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
   category: Category | Types.ObjectId;
 
+  @Prop([String])
+  images?: string[];
+
   @Prop()
-  image?: string;
+  video?: string;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

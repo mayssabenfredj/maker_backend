@@ -7,10 +7,11 @@ import {
   Param,
   Delete,
   UseInterceptors,
+  UploadedFiles,
   UploadedFile,
   BadRequestException,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { ProductsService } from './products.service';
@@ -23,7 +24,7 @@ export class ProductsController {
 
   @Post()
   @UseInterceptors(
-    FileInterceptor('image', {
+    FilesInterceptor('images', 10, {
       storage: diskStorage({
         destination: './uploads/products',
         filename: (req, file, cb) => {
@@ -47,12 +48,49 @@ export class ProductsController {
   )
   async create(
     @Body() createProductDto: CreateProductDto,
-    @UploadedFile() file?: Express.Multer.File,
+    @UploadedFiles() imageFiles?: Express.Multer.File[],
+    @UploadedFile() videoFile?: Express.Multer.File,
   ) {
-    if (file) {
-      createProductDto.image = `/uploads/products/${file.filename}`;
+    if (imageFiles && imageFiles.length > 0) {
+      createProductDto.images = imageFiles.map(
+        (file) => `/uploads/products/${file.filename}`,
+      );
+    }
+    if (videoFile) {
+      createProductDto.video = `/uploads/products/${videoFile.filename}`;
     }
     return this.productsService.create(createProductDto);
+  }
+
+  @Post('upload-video')
+  @UseInterceptors(
+    FileInterceptor('video', {
+      storage: diskStorage({
+        destination: './uploads/products',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          return cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (!file.originalname.match(/\.(mp4|avi|mov|wmv|flv|webm)$/)) {
+          return cb(
+            new BadRequestException('Only video files are allowed!'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadVideo(@UploadedFile() videoFile: Express.Multer.File) {
+    return {
+      message: 'Video uploaded successfully',
+      videoPath: `/uploads/products/${videoFile.filename}`,
+    };
   }
 
   @Get()
@@ -67,7 +105,7 @@ export class ProductsController {
 
   @Patch(':id')
   @UseInterceptors(
-    FileInterceptor('image', {
+    FilesInterceptor('images', 10, {
       storage: diskStorage({
         destination: './uploads/products',
         filename: (req, file, cb) => {
@@ -92,10 +130,16 @@ export class ProductsController {
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
-    @UploadedFile() file?: Express.Multer.File,
+    @UploadedFiles() imageFiles?: Express.Multer.File[],
+    @UploadedFile() videoFile?: Express.Multer.File,
   ) {
-    if (file) {
-      updateProductDto.image = `/uploads/products/${file.filename}`;
+    if (imageFiles && imageFiles.length > 0) {
+      updateProductDto.images = imageFiles.map(
+        (file) => `/uploads/products/${file.filename}`,
+      );
+    }
+    if (videoFile) {
+      updateProductDto.video = `/uploads/products/${videoFile.filename}`;
     }
     return this.productsService.update(id, updateProductDto);
   }
