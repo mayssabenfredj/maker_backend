@@ -108,7 +108,7 @@ export class ProductsService {
       );
     }
     try {
-      // Get the current product to check if it has an image
+      // Get the current product to check if it has images or video
       const currentProduct = await this.productModel.findById(id).exec();
       if (!currentProduct) {
         throw new HttpException(
@@ -120,14 +120,32 @@ export class ProductsService {
         );
       }
 
-      // If there's a new image and the product had an old image, delete the old one
-      if (updateProductDto.image && currentProduct.image) {
+      // If there are new images and the product had old images, delete the old ones
+      if (
+        updateProductDto.images &&
+        currentProduct.images &&
+        currentProduct.images.length > 0
+      ) {
+        for (const oldImage of currentProduct.images) {
+          try {
+            const oldImagePath = join(process.cwd(), oldImage);
+            await unlink(oldImagePath);
+          } catch (error) {
+            console.log(
+              'Old image file not found or already deleted:',
+              oldImage,
+            );
+          }
+        }
+      }
+
+      // If there's a new video and the product had an old video, delete the old one
+      if (updateProductDto.video && currentProduct.video) {
         try {
-          const oldImagePath = join(process.cwd(), currentProduct.image);
-          await unlink(oldImagePath);
+          const oldVideoPath = join(process.cwd(), currentProduct.video);
+          await unlink(oldVideoPath);
         } catch (error) {
-          // Ignore error if file doesn't exist
-          console.log('Old image file not found or already deleted');
+          console.log('Old video file not found or already deleted');
         }
       }
 
@@ -185,14 +203,25 @@ export class ProductsService {
         );
       }
 
-      // Delete the associated image file if it exists
-      if (deletedProduct.image) {
+      // Delete the associated image files if they exist
+      if (deletedProduct.images && deletedProduct.images.length > 0) {
+        for (const image of deletedProduct.images) {
+          try {
+            const imagePath = join(process.cwd(), image);
+            await unlink(imagePath);
+          } catch (error) {
+            console.log('Image file not found or already deleted:', image);
+          }
+        }
+      }
+
+      // Delete the associated video file if it exists
+      if (deletedProduct.video) {
         try {
-          const imagePath = join(process.cwd(), deletedProduct.image);
-          await unlink(imagePath);
+          const videoPath = join(process.cwd(), deletedProduct.video);
+          await unlink(videoPath);
         } catch (error) {
-          // Ignore error if file doesn't exist
-          console.log('Image file not found or already deleted');
+          console.log('Video file not found or already deleted');
         }
       }
 
