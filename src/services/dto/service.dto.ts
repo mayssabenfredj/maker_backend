@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsNotEmpty,
   IsOptional,
@@ -37,6 +38,11 @@ export class CreateServiceDto {
     type: [String],
     required: true,
   })
+  @Transform(({ value }) => {
+    if (!value) return [];
+    // Accept already-parsed arrays or comma-separated strings
+    return Array.isArray(value) ? value : (value as string).split(',');
+  })
   @IsArray()
   @IsMongoId({ each: true })
   @ArrayMinSize(1, { message: 'At least one category must be specified' })
@@ -47,6 +53,9 @@ export class CreateServiceDto {
     example: 199.99,
     required: false,
   })
+  @Transform(({ value }) =>
+    value === undefined || value === '' ? undefined : Number(value),
+  )
   @IsNumber()
   @IsOptional()
   price?: number;
@@ -74,14 +83,27 @@ export class CreateServiceDto {
     example: 'https://example.com/service-image.jpg',
     required: false,
   })
+  @ValidateIf(({ imageUrl }) => imageUrl !== undefined && imageUrl !== '')
   @IsUrl()
   @IsOptional()
   imageUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Relative path of the uploaded service image',
+    example: '/uploads/services/abc123.jpg',
+  })
+  @IsString()
+  @IsOptional()
+  coverImagePath?: string;
 
   @ApiProperty({
     description: 'Whether the service is active',
     example: true,
     required: false,
+  })
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    return value === 'true' || value === true || value === 1 || value === '1';
   })
   @IsBoolean()
   @IsOptional()
@@ -114,6 +136,10 @@ export class UpdateServiceDto {
     required: false,
   })
   @ValidateIf((o) => o.categories !== undefined)
+  @Transform(({ value }) => {
+    if (!value) return undefined;
+    return Array.isArray(value) ? value : (value as string).split(',');
+  })
   @IsArray()
   @IsMongoId({ each: true })
   @ArrayMinSize(1, { message: 'Cannot update to empty categories array' })
@@ -154,6 +180,14 @@ export class UpdateServiceDto {
   @IsUrl()
   @IsOptional()
   imageUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Relative path of the uploaded service image',
+    example: '/uploads/services/abc123.jpg',
+  })
+  @IsString()
+  @IsOptional()
+  coverImagePath?: string;
 
   @ApiProperty({
     description: 'Whether the service is active',

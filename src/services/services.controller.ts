@@ -1,5 +1,7 @@
 import {
   Controller,
+  UseInterceptors,
+  UploadedFile,
   Get,
   Post,
   Body,
@@ -8,6 +10,9 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { ServicesService } from './services.service';
 import {
   AddCategoriesDto,
@@ -19,6 +24,7 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
+  ApiConsumes,
   ApiParam,
   ApiBody,
   ApiQuery,
@@ -31,6 +37,27 @@ export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
   @Post()
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/services',
+        filename: (_req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          return cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (_req, file, cb) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+          return cb(new Error('Only image files are allowed!'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
   @ApiOperation({ summary: 'Create a new service' })
   @ApiResponse({
     status: 201,
@@ -38,8 +65,34 @@ export class ServicesController {
     type: Service,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiBody({ type: CreateServiceDto })
-  create(@Body() createServiceDto: CreateServiceDto) {
+  @ApiBody({
+    description: 'Service creation payload (multipart/form-data)',
+    schema: {
+      type: 'object',
+      properties: {
+        image: { type: 'string', format: 'binary' },
+        name: { type: 'string' },
+        description: { type: 'string' },
+        categories: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+        price: { type: 'number' },
+        duration: { type: 'string' },
+        provider: { type: 'string' },
+        imageUrl: { type: 'string' },
+        isActive: { type: 'boolean' },
+      },
+      required: ['name', 'categories'],
+    },
+  })
+  create(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createServiceDto: CreateServiceDto,
+  ) {
+    if (file) {
+      createServiceDto.coverImagePath = `/uploads/services/${file.filename}`;
+    }
     return this.servicesService.create(createServiceDto);
   }
 
@@ -88,6 +141,27 @@ export class ServicesController {
   }
 
   @Patch(':id')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/services',
+        filename: (_req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          return cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (_req, file, cb) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+          return cb(new Error('Only image files are allowed!'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update service' })
   @ApiParam({ name: 'id', description: 'Service ID' })
   @ApiResponse({
@@ -97,8 +171,35 @@ export class ServicesController {
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Service not found' })
-  @ApiBody({ type: UpdateServiceDto })
-  update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
+  @ApiBody({
+    description: 'Service update payload (multipart/form-data)',
+    schema: {
+      type: 'object',
+      properties: {
+        image: { type: 'string', format: 'binary' },
+        name: { type: 'string' },
+        description: { type: 'string' },
+        categories: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+        price: { type: 'number' },
+        duration: { type: 'string' },
+        provider: { type: 'string' },
+        imageUrl: { type: 'string' },
+        isActive: { type: 'boolean' },
+        coverImagePath: { type: 'string' },
+      },
+    },
+  })
+  update(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() updateServiceDto: UpdateServiceDto,
+  ) {
+    if (file) {
+      updateServiceDto.coverImagePath = `/uploads/services/${file.filename}`;
+    }
     return this.servicesService.update(id, updateServiceDto);
   }
 

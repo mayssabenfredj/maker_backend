@@ -1,8 +1,11 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId } from 'mongoose';
 import { CreateWorkshopDto, UpdateWorkshopDto } from './dto/workshop.dto';
 import { Workshop, WorkshopDocument } from './entities/workshop.entity';
+import { Participant } from '../participants/entities/participant.entity';
+import { CreateParticipantDto } from '../participants/dto/create-participant.dto';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -10,6 +13,7 @@ import * as path from 'path';
 export class WorkshopsService {
   constructor(
     @InjectModel(Workshop.name) private workshopModel: Model<WorkshopDocument>,
+    @InjectModel(Participant.name) private participantModel: Model<Participant>,
   ) {}
 
   async create(
@@ -261,6 +265,97 @@ export class WorkshopsService {
     } catch (error) {
       console.error('Failed to delete image file:', imagePath, error);
       // Fail silently - don't throw error for file cleanup failures
+    }
+  }
+  async join(
+    id: string,
+    createParticipantDto: CreateParticipantDto,
+  ): Promise<{ message: string; data: WorkshopDocument }> {
+    if (!isValidObjectId(id)) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Invalid workshop ID',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    try {
+      const workshop = await this.workshopModel.findById(id).exec();
+
+      if (!workshop) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            message: 'Workshop not found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Ensure the workshop still has capacity if maxParticipants is set
+      const currentCount = workshop.participants
+        ? workshop.participants.length
+        : 0;
+      if (
+        workshop.maxParticipants &&
+        currentCount >= workshop.maxParticipants
+      ) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: 'Workshop is already full',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Prevent duplicate registration by e-mail
+      const existingParticipant = await this.participantModel
+        .findOne({ email: createParticipantDto.email, workshop: (workshop._id as any).toString() })
+        .exec();
+      console.log('existingParticipant', {
+        email: createParticipantDto.email,
+        workshop: workshop._id,
+      });
+      if (existingParticipant) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.CONFLICT,
+            message: 'Participant already registered for this workshop',
+          },
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      // Assign workshop id on dto (satisfies validation rule that participant belongs to exactly one parent)
+      createParticipantDto.workshop = (workshop._id as any).toString();
+
+      // Create the participant document
+      const newParticipant = new this.participantModel(createParticipantDto);
+      const savedParticipant = await newParticipant.save();
+
+      // Push participant into workshop participants list
+      workshop.participants = workshop.participants || [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      workshop.participants.push(savedParticipant._id as any);
+      await workshop.save();
+
+      // Populate participants for the response (optional)
+      await workshop.populate('participants');
+
+      return {
+        message: 'Successfully joined the workshop',
+        data: workshop,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message || 'Failed to join workshop',
+        },
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

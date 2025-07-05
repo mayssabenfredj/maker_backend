@@ -22,6 +22,7 @@ import {
   UpdateWorkshopForm,
 } from './dto/workshop.dto';
 import { ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
+import { CreateParticipantDto } from '../participants/dto/create-participant.dto';
 
 @ApiTags('Workshops')
 @Controller('workshops')
@@ -109,6 +110,16 @@ export class WorkshopsController {
       updateWorkshopDto.coverImagePath = `/uploads/workshops/${file.filename}`;
     }
     return this.workshopsService.update(id, updateWorkshopDto);
+  }
+
+  
+  @Post(':id/join')
+  @ApiBody({ type: CreateParticipantDto })
+  async join(
+    @Param('id') id: string,
+    @Body() createParticipantDto: CreateParticipantDto,
+  ) {
+    return this.workshopsService.join(id, createParticipantDto);
   }
 
   @Delete(':id')

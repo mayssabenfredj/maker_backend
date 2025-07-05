@@ -47,6 +47,14 @@ export class Service extends Document {
   duration?: string;
 
   @ApiProperty({
+    description: 'Service cover image relative path',
+    example: '/uploads/services/abc123.jpg',
+    required: false,
+  })
+  @Prop()
+  coverImagePath?: string;
+
+  @ApiProperty({
     description: 'Whether the service is active',
     example: true,
     required: false,
