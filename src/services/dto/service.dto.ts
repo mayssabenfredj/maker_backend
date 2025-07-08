@@ -36,17 +36,57 @@ export class CreateServiceDto {
     description: 'Array of category IDs',
     example: ['64c9e4e5a88f3f001f7d8a9a', '64c9e4e5a88f3f001f7d8a9b'],
     type: [String],
-    required: true,
+    required: false,
   })
   @Transform(({ value }) => {
     if (!value) return [];
-    // Accept already-parsed arrays or comma-separated strings
     return Array.isArray(value) ? value : (value as string).split(',');
   })
   @IsArray()
   @IsMongoId({ each: true })
-  @ArrayMinSize(1, { message: 'At least one category must be specified' })
-  categories: string[];
+  categories?: string[];
+
+  @ApiProperty({
+    description: 'Related projects',
+    type: [String],
+    required: false,
+  })
+  @Transform(({ value }) => {
+    if (!value) return [];
+    return Array.isArray(value) ? value : (value as string).split(',');
+  })
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  projects?: string[];
+
+  @ApiProperty({
+    description: 'Related products',
+    type: [String],
+    required: false,
+  })
+  @Transform(({ value }) => {
+    if (!value) return [];
+    return Array.isArray(value) ? value : (value as string).split(',');
+  })
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  products?: string[];
+
+  @ApiProperty({
+    description: 'Related events',
+    type: [String],
+    required: false,
+  })
+  @Transform(({ value }) => {
+    if (!value) return [];
+    return Array.isArray(value) ? value : (value as string).split(',');
+  })
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  events?: string[];
 
   @ApiProperty({
     description: 'Service price in USD',
@@ -144,6 +184,36 @@ export class UpdateServiceDto {
   @IsMongoId({ each: true })
   @ArrayMinSize(1, { message: 'Cannot update to empty categories array' })
   categories?: string[];
+
+  @ApiProperty({
+    description: 'Related projects',
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  projects?: string[];
+
+  @ApiProperty({
+    description: 'Related products',
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  products?: string[];
+
+  @ApiProperty({
+    description: 'Related events',
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  events?: string[];
 
   @ApiProperty({
     description: 'Service price in USD',

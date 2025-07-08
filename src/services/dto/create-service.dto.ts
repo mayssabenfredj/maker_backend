@@ -2,9 +2,11 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsNumber,
   IsBoolean,
+  IsArray,
+  IsMongoId,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateServiceDto {
   @IsString()
@@ -15,17 +17,65 @@ export class CreateServiceDto {
   @IsOptional()
   description?: string;
 
-  @IsString()
+  @IsArray()
+  @IsMongoId({ each: true })
   @IsOptional()
-  category?: string;
+  @Transform(({ value }) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return value.split(',').map((item: string) => item.trim());
+    }
+  })
+  categories?: string[];
 
-  @IsNumber()
+  @IsArray()
+  @IsMongoId({ each: true })
   @IsOptional()
-  price?: number;
+  @Transform(({ value }) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return value.split(',').map((item: string) => item.trim());
+    }
+  })
+  projects?: string[];
 
-  @IsString()
+  @IsArray()
+  @IsMongoId({ each: true })
   @IsOptional()
-  duration?: string;
+  @Transform(({ value }) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return value.split(',').map((item: string) => item.trim());
+    }
+  })
+  products?: string[];
+
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return value.split(',').map((item: string) => item.trim());
+    }
+  })
+  events?: string[];
 
   @IsString()
   @IsOptional()

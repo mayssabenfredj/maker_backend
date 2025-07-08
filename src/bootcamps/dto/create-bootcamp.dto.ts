@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsNotEmpty,
   IsOptional,
@@ -5,6 +6,7 @@ import {
   IsArray,
   IsMongoId,
   IsDateString,
+  IsNumber,
 } from 'class-validator';
 
 export class CreateBootcampDto {
@@ -19,6 +21,16 @@ export class CreateBootcampDto {
   @IsArray()
   @IsString({ each: true })
   @IsNotEmpty()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value.split(',').map((item) => item.trim());
+      }
+    }
+    return value;
+  })
   types: string[];
 
   @IsString()
@@ -50,17 +62,40 @@ export class CreateBootcampDto {
   @IsNotEmpty()
   animator: string;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  price: string;
+  @Transform(({ value }) => Number(value))
+  price: number;
 
   @IsArray()
   @IsMongoId({ each: true })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        return value.split(',').map((item) => item.trim());
+      }
+    }
+    return Array.isArray(value) ? value : [value];
+  })
   participants?: string[];
 
   @IsArray()
   @IsMongoId({ each: true })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        return value.split(',').map((item) => item.trim());
+      }
+    }
+    return Array.isArray(value) ? value : [value];
+  })
   products?: string[];
 }

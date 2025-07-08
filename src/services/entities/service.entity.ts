@@ -2,6 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Category } from 'src/categories/entities/category.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { Project } from 'src/projects/entities/project.entity';
+import { Product } from 'src/products/entities/product.entity';
+import { Event } from 'src/events/entities/event.entity';
 
 @Schema({ timestamps: true })
 export class Service extends Document {
@@ -31,22 +34,6 @@ export class Service extends Document {
   categories?: Category[];
 
   @ApiProperty({
-    description: 'Service price in USD',
-    example: 199.99,
-    required: false,
-  })
-  @Prop()
-  price?: number;
-
-  @ApiProperty({
-    description: 'Estimated service duration',
-    example: '2 weeks',
-    required: false,
-  })
-  @Prop()
-  duration?: string;
-
-  @ApiProperty({
     description: 'Service cover image relative path',
     example: '/uploads/services/abc123.jpg',
     required: false,
@@ -61,6 +48,30 @@ export class Service extends Document {
   })
   @Prop({ default: true })
   isActive?: boolean;
+
+  @ApiProperty({
+    description: 'Related projects',
+    type: [String],
+    required: false,
+  })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Project' }] })
+  projects?: Project[];
+
+  @ApiProperty({
+    description: 'Related products',
+    type: [String],
+    required: false,
+  })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }] })
+  products?: Product[];
+
+  @ApiProperty({
+    description: 'Related events',
+    type: [String],
+    required: false,
+  })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Event' }] })
+  events?: Event[];
 
   @ApiProperty({
     description: 'Creation timestamp',

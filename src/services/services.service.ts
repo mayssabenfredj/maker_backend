@@ -21,7 +21,11 @@ export class ServicesService {
     try {
       const createdService = new this.serviceModel({
         ...createServiceDto,
-        isActive: createServiceDto.isActive ?? true, // Default to active if not specified
+        isActive: createServiceDto.isActive ?? true,
+        categories: createServiceDto.categories ?? [],
+        projects: createServiceDto.projects ?? [],
+        products: createServiceDto.products ?? [],
+        events: createServiceDto.events ?? [],
       });
       const savedService = await createdService.save();
       return {
@@ -65,6 +69,9 @@ export class ServicesService {
       const services = await this.serviceModel
         .find(query)
         .populate('categories')
+        .populate('products')
+        .populate('events')
+        .populate('projects')
         .exec();
       return {
         message: 'Services retrieved successfully',
@@ -95,6 +102,9 @@ export class ServicesService {
       const service = await this.serviceModel
         .findById(id)
         .populate('categories')
+        .populate('products')
+        .populate('events')
+        .populate('projects')
         .exec();
       if (!service) {
         throw new HttpException(
@@ -137,10 +147,26 @@ export class ServicesService {
       const updatedService = await this.serviceModel
         .findByIdAndUpdate(
           id,
-          { ...updateServiceDto, updatedAt: new Date() },
+          {
+            ...updateServiceDto,
+            updatedAt: new Date(),
+            ...(updateServiceDto.categories && {
+              categories: updateServiceDto.categories,
+            }),
+            ...(updateServiceDto.projects && {
+              projects: updateServiceDto.projects,
+            }),
+            ...(updateServiceDto.products && {
+              products: updateServiceDto.products,
+            }),
+            ...(updateServiceDto.events && { events: updateServiceDto.events }),
+          },
           { new: true },
         )
         .populate('categories')
+        .populate('projects')
+        .populate('products')
+        .populate('events')
         .exec();
 
       if (!updatedService) {

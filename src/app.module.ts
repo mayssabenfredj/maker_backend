@@ -14,6 +14,10 @@ import { WorkshopsModule } from './workshops/workshops.module';
 import { EventsModule } from './events/events.module';
 import { ParticipantsModule } from './participants/participants.module';
 import { AuthModule } from './auth/auth.module';
+import { PartnersModule } from './partners/partners.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { BlogsModule } from './blogs/blogs.module';
+import { HeroSectionModule } from './hero-section/hero-section.module';
 
 @Module({
   imports: [
@@ -46,6 +50,10 @@ import { AuthModule } from './auth/auth.module';
     EventsModule,
     ParticipantsModule,
     AuthModule,
+    PartnersModule,
+    ReviewsModule,
+    BlogsModule,
+    HeroSectionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
