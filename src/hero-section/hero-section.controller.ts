@@ -22,7 +22,7 @@ export class HeroSectionController {
 
   @Post()
   @UseInterceptors(
-    FilesInterceptor('images', 5, {
+    FilesInterceptor('images', 1, {
       storage: diskStorage({
         destination: './uploads/hero-section',
         filename: (_req, file, cb) => {
@@ -65,7 +65,7 @@ export class HeroSectionController {
 
   @Patch(':id')
   @UseInterceptors(
-    FilesInterceptor('images', 5, {
+    FilesInterceptor('images', 1, {
       storage: diskStorage({
         destination: './uploads/hero-section',
         filename: (_req, file, cb) => {

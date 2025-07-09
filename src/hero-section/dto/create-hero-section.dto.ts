@@ -6,7 +6,7 @@ import {
   ValidateNested,
   ArrayMaxSize,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 class HeroButtonDto {
   @IsString()
@@ -32,8 +32,28 @@ export class CreateHeroSectionDto {
   @IsOptional()
   images?: string[];
 
-  @IsArray()
-  @ValidateNested({ each: true })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return [];
+      }
+    }
+    // Si c'est un tableau de strings JSON
+    if (
+      Array.isArray(value) &&
+      value.length === 1 &&
+      typeof value[0] === 'string'
+    ) {
+      try {
+        return JSON.parse(value[0]);
+      } catch {
+        return [];
+      }
+    }
+    return value;
+  })
   @Type(() => HeroButtonDto)
   @IsOptional()
   buttons?: HeroButtonDto[];
