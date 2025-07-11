@@ -45,6 +45,7 @@ export class EventsService {
       const events = await this.eventModel
         .find()
         .populate('participants')
+        .populate('category')
         .exec();
       return {
         message: 'Events retrieved successfully',
@@ -75,6 +76,8 @@ export class EventsService {
       const event = await this.eventModel
         .findById(id)
         .populate('participants')
+        .populate('category')
+        .populate('products')
         .exec();
       if (!event) {
         throw new HttpException(

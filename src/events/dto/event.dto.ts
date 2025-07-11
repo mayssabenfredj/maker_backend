@@ -459,4 +459,11 @@ export class EventResponseDto {
     example: '2023-10-05T14:30:00Z',
   })
   updatedAt: Date;
+
+  @ApiPropertyOptional({
+    description: 'Categories associated with the event',
+    example: ['507f1f77bcf86cd799439011'],
+    type: [String],
+  })
+  category: string[];
 }

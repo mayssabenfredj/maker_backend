@@ -18,6 +18,7 @@ import { PartnersModule } from './partners/partners.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { BlogsModule } from './blogs/blogs.module';
 import { HeroSectionModule } from './hero-section/hero-section.module';
+import { FileUploadModule } from './file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { HeroSectionModule } from './hero-section/hero-section.module';
     BootcampsModule,
     ProjectsModule,
     ServicesModule,
+    FileUploadModule,
     WorkshopsModule,
     EventsModule,
     ParticipantsModule,
@@ -54,6 +56,7 @@ import { HeroSectionModule } from './hero-section/hero-section.module';
     ReviewsModule,
     BlogsModule,
     HeroSectionModule,
+    FileUploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],
