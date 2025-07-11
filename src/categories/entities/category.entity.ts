@@ -8,6 +8,9 @@ export class Category extends Document {
 
   @Prop()
   description?: string;
+
+  @Prop()
+  type: 'product' | 'event';
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

@@ -1,164 +1,348 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
-  IsNotEmpty,
+  IsArray,
+  IsBoolean,
+  IsNumber,
   IsOptional,
   IsString,
-  IsDateString,
-  IsNumber,
-  IsArray,
+  ValidateNested,
   IsMongoId,
+  IsDateString,
+  IsNotEmpty,
 } from 'class-validator';
 
+class ModuleItemDto {
+  @ApiPropertyOptional({
+    description: 'Title of the module',
+    example: 'Introduction to Programming',
+  })
+  @IsOptional()
+  @IsString()
+  title: string;
+
+  @ApiPropertyOptional({
+    description: 'Items in the module',
+    example: ['Basic Syntax', 'Variables'],
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  items: string[];
+}
+
+class InstructorDto {
+  @ApiPropertyOptional({
+    description: 'URL of instructor photo',
+    example: 'https://example.com/instructor.jpg',
+  })
+  @IsOptional()
+  @IsString()
+  photoUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Name of the instructor',
+    example: 'John Doe',
+  })
+  @IsOptional()
+  @IsString()
+  name: string;
+
+  @ApiPropertyOptional({
+    description: 'Title/position of the instructor',
+    example: 'Senior Developer',
+  })
+  @IsOptional()
+  @IsString()
+  title: string;
+
+  @ApiPropertyOptional({
+    description: 'Years of experience',
+    example: 5,
+  })
+  @IsOptional()
+  @IsNumber()
+  experienceYears: number;
+
+  @ApiPropertyOptional({
+    description: 'Number of students taught',
+    example: 100,
+  })
+  @IsOptional()
+  @IsNumber()
+  studentsCount: number;
+}
+
 export class CreateEventDto {
+  @ApiPropertyOptional({
+    description: 'Event modules',
+    type: [ModuleItemDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ModuleItemDto)
+  modules: ModuleItemDto[];
+
+  @ApiPropertyOptional({
+    description: 'Event instructor details',
+    type: InstructorDto,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => InstructorDto)
+  instructor: InstructorDto;
+
+  @ApiPropertyOptional({
+    description: 'Type of event',
+    enum: ['workshop', 'bootcamp', 'event', 'course'],
+    example: 'workshop',
+  })
+  @IsOptional()
+  @IsString()
+  type: 'workshop' | 'bootcamp' | 'event' | 'course';
+
   @ApiProperty({
     description: 'Name of the event',
-    example: 'Tech Conference 2023',
+    example: 'Advanced JavaScript Workshop',
     required: true,
   })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({
-    description: 'Description of the event',
-    example: 'Annual technology conference featuring top industry speakers',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  description?: string;
-
-  @ApiProperty({
-    description: 'Start date of the event in ISO format',
-    example: '2023-11-15T09:00:00Z',
-    required: true,
-  })
-  @IsDateString()
-  @IsNotEmpty()
-  startDate: string;
-
-  @ApiProperty({
-    description: 'End date of the event in ISO format',
-    example: '2023-11-17T18:00:00Z',
-    required: true,
-  })
-  @IsDateString()
-  @IsNotEmpty()
-  endDate: string;
-
-  @ApiProperty({
-    description: 'Location of the event',
-    example: 'Convention Center, New York',
-    required: true,
-  })
-  @IsString()
-  @IsNotEmpty()
-  location: string;
-
-  @ApiProperty({
-    description: 'Maximum number of participants',
-    example: 500,
-    required: false,
-  })
-  @IsNumber()
-  @IsOptional()
-  maxParticipants?: number;
-
-  @ApiProperty({
-    description: 'Ticket price in USD',
+  @ApiPropertyOptional({
+    description: 'Price of the event',
     example: 99.99,
-    required: false,
   })
-  @IsNumber()
   @IsOptional()
-  price?: number;
+  @IsNumber()
+  price: number;
 
-  @ApiProperty({
-    description: 'Array of participant IDs',
-    example: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'],
-    required: false,
+  @ApiPropertyOptional({
+    description: 'Price reduction/discount',
+    example: 20,
+  })
+  @IsOptional()
+  @IsNumber()
+  reduction: number;
+
+  @ApiPropertyOptional({
+    description: 'Duration of the event',
+    example: '2 days',
+  })
+  @IsOptional()
+  @IsString()
+  duration: string;
+
+  @ApiPropertyOptional({
+    description: 'Start date of the event',
+    example: '2023-12-15T09:00:00Z',
+  })
+  @IsOptional()
+  @IsDateString()
+  startDate?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Requirements for participants',
+    example: ['Laptop', 'Basic JavaScript knowledge'],
     type: [String],
   })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  required: string[];
+
+  @ApiPropertyOptional({
+    description: 'What is included in the event',
+    example: ['Materials', 'Lunch'],
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  includedInEvent: string[];
+
+  @ApiPropertyOptional({
+    description: 'Learning objectives',
+    example: ['Master advanced concepts', 'Build real projects'],
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  objectives: string[];
+
+  @ApiPropertyOptional({
+    description: 'Location type',
+    enum: ['online', 'in_person'],
+    example: 'in_person',
+  })
+  @IsOptional()
+  @IsString()
+  location: 'online' | 'in_person';
+
+  @ApiPropertyOptional({
+    description: 'Whether certification is provided',
+    example: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  certification: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Related product IDs',
+    example: ['507f1f77bcf86cd799439011'],
+    type: [String],
+  })
+  @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
+  products: string[];
+
+  @ApiPropertyOptional({
+    description: 'Physical address for in-person events',
+    example: '123 Main St, New York, NY',
+  })
   @IsOptional()
-  participants?: string[];
+  @IsString()
+  address: string;
 }
 
 export class UpdateEventDto {
-  @ApiProperty({
-    description: 'Name of the event',
-    example: 'Tech Conference 2023 Updated',
-    required: false,
+  @ApiPropertyOptional({
+    description: 'Event modules',
+    type: [ModuleItemDto],
   })
-  @IsString()
   @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ModuleItemDto)
+  modules?: ModuleItemDto[];
+
+  @ApiPropertyOptional({
+    description: 'Event instructor details',
+    type: InstructorDto,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => InstructorDto)
+  instructor?: InstructorDto;
+
+  @ApiPropertyOptional({
+    description: 'Type of event',
+    enum: ['workshop', 'bootcamp', 'event', 'course'],
+    example: 'workshop',
+  })
+  @IsOptional()
+  @IsString()
+  type?: 'workshop' | 'bootcamp' | 'event' | 'course';
+
+  @ApiPropertyOptional({
+    description: 'Name of the event',
+    example: 'Advanced JavaScript Workshop',
+  })
+  @IsOptional()
+  @IsString()
   name?: string;
 
-  @ApiProperty({
-    description: 'Description of the event',
-    example: 'Updated description for the tech conference',
-    required: false,
+  @ApiPropertyOptional({
+    description: 'Price of the event',
+    example: 99.99,
   })
-  @IsString()
   @IsOptional()
-  description?: string;
-
-  @ApiProperty({
-    description: 'Start date of the event in ISO format',
-    example: '2023-11-16T09:00:00Z',
-    required: false,
-  })
-  @IsDateString()
-  @IsOptional()
-  startDate?: string;
-
-  @ApiProperty({
-    description: 'End date of the event in ISO format',
-    example: '2023-11-18T18:00:00Z',
-    required: false,
-  })
-  @IsDateString()
-  @IsOptional()
-  endDate?: string;
-
-  @ApiProperty({
-    description: 'Location of the event',
-    example: 'Updated Convention Center, New York',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  location?: string;
-
-  @ApiProperty({
-    description: 'Maximum number of participants',
-    example: 600,
-    required: false,
-  })
   @IsNumber()
-  @IsOptional()
-  maxParticipants?: number;
-
-  @ApiProperty({
-    description: 'Ticket price in USD',
-    example: 129.99,
-    required: false,
-  })
-  @IsNumber()
-  @IsOptional()
   price?: number;
 
-  @ApiProperty({
-    description: 'Array of participant IDs',
-    example: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439013'],
-    required: false,
+  @ApiPropertyOptional({
+    description: 'Price reduction/discount',
+    example: 20,
+  })
+  @IsOptional()
+  @IsNumber()
+  reduction?: number;
+
+  @ApiPropertyOptional({
+    description: 'Duration of the event',
+    example: '2 days',
+  })
+  @IsOptional()
+  @IsString()
+  duration?: string;
+
+  @ApiPropertyOptional({
+    description: 'Start date of the event',
+    example: '2023-12-15T09:00:00Z',
+  })
+  @IsOptional()
+  @IsDateString()
+  startDate?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Requirements for participants',
+    example: ['Laptop', 'Basic JavaScript knowledge'],
     type: [String],
   })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  required?: string[];
+
+  @ApiPropertyOptional({
+    description: 'What is included in the event',
+    example: ['Materials', 'Lunch'],
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  includedInEvent?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Learning objectives',
+    example: ['Master advanced concepts', 'Build real projects'],
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  objectives?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Location type',
+    enum: ['online', 'in_person'],
+    example: 'in_person',
+  })
+  @IsOptional()
+  @IsString()
+  location?: 'online' | 'in_person';
+
+  @ApiPropertyOptional({
+    description: 'Whether certification is provided',
+    example: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  certification?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Related product IDs',
+    example: ['507f1f77bcf86cd799439011'],
+    type: [String],
+  })
+  @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
+  products?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Physical address for in-person events',
+    example: '123 Main St, New York, NY',
+  })
   @IsOptional()
-  participants?: string[];
+  @IsString()
+  address?: string;
 }
 
 export class EventResponseDto {
@@ -170,55 +354,99 @@ export class EventResponseDto {
 
   @ApiProperty({
     description: 'Name of the event',
-    example: 'Tech Conference 2023',
+    example: 'Advanced JavaScript Workshop',
   })
   name: string;
 
-  @ApiProperty({
-    description: 'Description of the event',
-    example: 'Annual technology conference',
-    required: false,
+  @ApiPropertyOptional({
+    description: 'Event modules',
+    type: [ModuleItemDto],
   })
-  description?: string;
+  modules?: ModuleItemDto[];
 
-  @ApiProperty({
-    description: 'Start date of the event',
-    example: '2023-11-15T09:00:00Z',
+  @ApiPropertyOptional({
+    description: 'Event instructor details',
+    type: InstructorDto,
   })
-  startDate: Date;
+  instructor?: InstructorDto;
 
-  @ApiProperty({
-    description: 'End date of the event',
-    example: '2023-11-17T18:00:00Z',
+  @ApiPropertyOptional({
+    description: 'Type of event',
+    enum: ['workshop', 'bootcamp', 'event', 'course'],
+    example: 'workshop',
   })
-  endDate: Date;
+  type?: string;
 
-  @ApiProperty({
-    description: 'Location of the event',
-    example: 'Convention Center, New York',
-  })
-  location: string;
-
-  @ApiProperty({
-    description: 'Maximum number of participants',
-    example: 500,
-    required: false,
-  })
-  maxParticipants?: number;
-
-  @ApiProperty({
-    description: 'Ticket price in USD',
+  @ApiPropertyOptional({
+    description: 'Price of the event',
     example: 99.99,
-    required: false,
   })
   price?: number;
 
-  @ApiProperty({
-    description: 'Array of participant IDs',
+  @ApiPropertyOptional({
+    description: 'Price reduction/discount',
+    example: 20,
+  })
+  reduction?: number;
+
+  @ApiPropertyOptional({
+    description: 'Duration of the event',
+    example: '2 days',
+  })
+  duration?: string;
+
+  @ApiPropertyOptional({
+    description: 'Start date of the event',
+    example: '2023-12-15T09:00:00Z',
+  })
+  startDate?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Requirements for participants',
+    example: ['Laptop', 'Basic JavaScript knowledge'],
+    type: [String],
+  })
+  required?: string[];
+
+  @ApiPropertyOptional({
+    description: 'What is included in the event',
+    example: ['Materials', 'Lunch'],
+    type: [String],
+  })
+  includedInEvent?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Learning objectives',
+    example: ['Master advanced concepts', 'Build real projects'],
+    type: [String],
+  })
+  objectives?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Location type',
+    enum: ['online', 'in_person'],
+    example: 'in_person',
+  })
+  location?: string;
+
+  @ApiPropertyOptional({
+    description: 'Whether certification is provided',
+    example: false,
+  })
+  certification?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Related product IDs',
     example: ['507f1f77bcf86cd799439011'],
     type: [String],
   })
-  participants: string[];
+  products?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Physical address for in-person events',
+    example: '123 Main St, New York, NY',
+  })
+  address?: string;
 
   @ApiProperty({
     description: 'Creation timestamp',

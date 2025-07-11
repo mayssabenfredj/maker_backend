@@ -1,20 +1,30 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId } from 'mongoose';
-import { CreateEventDto } from './dto/create-event.dto';
-import { UpdateEventDto } from './dto/update-event.dto';
+import { CreateEventDto, UpdateEventDto } from './dto/event.dto';
 import { Event } from './entities/event.entity';
 
 @Injectable()
 export class EventsService {
-  constructor(
-    @InjectModel(Event.name) private eventModel: Model<Event>,
-  ) {}
+  constructor(@InjectModel(Event.name) private eventModel: Model<Event>) {}
 
-  async create(createEventDto: CreateEventDto): Promise<{ message: string; data: Event }> {
+  async create(
+    createEventDto: CreateEventDto,
+  ): Promise<{ message: string; data: Event }> {
     try {
+      console.log('createdEventdto', createEventDto);
       const createdEvent = new this.eventModel(createEventDto);
       const savedEvent = await createdEvent.save();
+      if (!savedEvent) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message:
+              'Failed to create event. Please make sure all fields are valid and try again.',
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
       return {
         message: 'Event created successfully',
         data: savedEvent,
@@ -90,7 +100,10 @@ export class EventsService {
     }
   }
 
-  async update(id: string, updateEventDto: UpdateEventDto): Promise<{ message: string; data: Event }> {
+  async update(
+    id: string,
+    updateEventDto: UpdateEventDto,
+  ): Promise<{ message: string; data: Event }> {
     if (!isValidObjectId(id)) {
       throw new HttpException(
         {
