@@ -31,6 +31,24 @@ export class CreateProductDto {
   @IsOptional()
   images?: string[];
 
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return [];
+      }
+    }
+    return value;
+  })
+  events?: string[] | string;
+
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  commandes?: string[];
+
   @IsString()
   @IsOptional()
   video?: string;

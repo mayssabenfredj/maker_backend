@@ -1,7 +1,8 @@
+import { UpdateProjectDto } from './dto/update-project.dto';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId } from 'mongoose';
-import { CreateProjectDto, UpdateProjectDto } from './dto/project.dto';
+import { CreateProjectDto } from './dto/project.dto';
 import { Project } from './entities/project.entity';
 
 @Injectable()
@@ -15,19 +16,19 @@ export class ProjectsService {
   ): Promise<{ message: string; data: Project }> {
     try {
       // Validate required fields for embedded systems projects
+
       if (
-        !createProjectDto.technologies ||
-        createProjectDto.technologies.length === 0
+        !createProjectDto.categories ||
+        createProjectDto.categories.length === 0
       ) {
         throw new HttpException(
-          'At least one technology must be specified for embedded projects',
+          'At least one category must be specified for the project',
           HttpStatus.BAD_REQUEST,
         );
       }
 
       const createdProject = new this.projectModel({
         ...createProjectDto,
-        status: createProjectDto.status || 'Planning',
       });
 
       const savedProject = await createdProject.save();
@@ -50,7 +51,7 @@ export class ProjectsService {
     try {
       const projects = await this.projectModel
         .find()
-        .sort({ createdAt: -1 })
+        .populate('categories', 'name')
         .exec();
       return {
         message: 'Projects retrieved successfully',
@@ -61,26 +62,6 @@ export class ProjectsService {
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: 'Failed to retrieve projects: ' + error.message,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async findFeatured(): Promise<{ message: string; data: Project[] }> {
-    try {
-      const projects = await this.projectModel
-        .find({ isFeatured: true })
-        .exec();
-      return {
-        message: 'Featured projects retrieved successfully',
-        data: projects,
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Failed to retrieve featured projects: ' + error.message,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -161,23 +142,13 @@ export class ProjectsService {
       );
     }
     try {
-      // Prevent updating technologies to empty array
-      if (
-        updateProjectDto.technologies &&
-        updateProjectDto.technologies.length === 0
-      ) {
-        throw new HttpException(
-          'At least one technology must be specified for embedded projects',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
       const updatedProject = await this.projectModel
         .findByIdAndUpdate(
           id,
           { ...updateProjectDto, updatedAt: new Date() },
           { new: true },
         )
+        .populate('categories')
         .exec();
 
       if (!updatedProject) {
@@ -203,48 +174,6 @@ export class ProjectsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-  }
-
-  async updateStatus(
-    id: string,
-    status: string,
-  ): Promise<{ message: string; data: Project }> {
-    const validStatuses = [
-      'Planning',
-      'In Development',
-      'Prototyping',
-      'Testing',
-      'Completed',
-      'Deployed',
-    ];
-    if (!validStatuses.includes(status)) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Invalid project status',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    return this.update(id, { status } as UpdateProjectDto);
-  }
-
-  async updateCompletion(
-    id: string,
-    completion: number,
-  ): Promise<{ message: string; data: Project }> {
-    if (completion < 0 || completion > 100) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Completion must be between 0 and 100',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    return this.update(id, { completion } as UpdateProjectDto);
   }
 
   async remove(id: string): Promise<{ message: string; data: null }> {
@@ -285,7 +214,7 @@ export class ProjectsService {
     }
   }
 
-  async addProjectImage(
+  async addImage(
     id: string,
     imageUrl: string,
   ): Promise<{ message: string; data: Project }> {
@@ -332,9 +261,7 @@ export class ProjectsService {
     }
   }
 
-  async searchProjects(
-    query: string,
-  ): Promise<{ message: string; data: Project[] }> {
+  async search(query: string): Promise<{ message: string; data: Project[] }> {
     try {
       const projects = await this.projectModel
         .find({

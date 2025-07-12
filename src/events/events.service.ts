@@ -1,20 +1,30 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId } from 'mongoose';
-import { CreateEventDto } from './dto/create-event.dto';
-import { UpdateEventDto } from './dto/update-event.dto';
+import { CreateEventDto, UpdateEventDto } from './dto/event.dto';
 import { Event } from './entities/event.entity';
 
 @Injectable()
 export class EventsService {
-  constructor(
-    @InjectModel(Event.name) private eventModel: Model<Event>,
-  ) {}
+  constructor(@InjectModel(Event.name) private eventModel: Model<Event>) {}
 
-  async create(createEventDto: CreateEventDto): Promise<{ message: string; data: Event }> {
+  async create(
+    createEventDto: CreateEventDto,
+  ): Promise<{ message: string; data: Event }> {
     try {
+      console.log('createdEventdto', createEventDto);
       const createdEvent = new this.eventModel(createEventDto);
       const savedEvent = await createdEvent.save();
+      if (!savedEvent) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message:
+              'Failed to create event. Please make sure all fields are valid and try again.',
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
       return {
         message: 'Event created successfully',
         data: savedEvent,
@@ -30,11 +40,18 @@ export class EventsService {
     }
   }
 
-  async findAll(): Promise<{ message: string; data: Event[] }> {
+  async findAll(
+    type?: 'workshop' | 'bootcamp' | 'event' | 'course',
+  ): Promise<{ message: string; data: Event[] }> {
     try {
+      const query: any = {};
+      if (type) {
+        query.type = type;
+      }
       const events = await this.eventModel
-        .find()
+        .find(query)
         .populate('participants')
+        .populate('category')
         .exec();
       return {
         message: 'Events retrieved successfully',
@@ -65,6 +82,8 @@ export class EventsService {
       const event = await this.eventModel
         .findById(id)
         .populate('participants')
+        .populate('category')
+        .populate('products')
         .exec();
       if (!event) {
         throw new HttpException(
@@ -90,7 +109,10 @@ export class EventsService {
     }
   }
 
-  async update(id: string, updateEventDto: UpdateEventDto): Promise<{ message: string; data: Event }> {
+  async update(
+    id: string,
+    updateEventDto: UpdateEventDto,
+  ): Promise<{ message: string; data: Event }> {
     if (!isValidObjectId(id)) {
       throw new HttpException(
         {

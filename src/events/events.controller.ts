@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import {
@@ -36,6 +37,7 @@ export class EventsController {
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiBody({ type: CreateEventDto })
   create(@Body() createEventDto: CreateEventDto) {
+    console.log('createdEventdto', createEventDto);
     return this.eventsService.create(createEventDto);
   }
 
@@ -46,8 +48,8 @@ export class EventsController {
     description: 'List of all events.',
     type: [EventResponseDto],
   })
-  findAll() {
-    return this.eventsService.findAll();
+  findAll(@Query('type') type?: 'workshop' | 'bootcamp' | 'event' | 'course') {
+    return this.eventsService.findAll(type);
   }
 
   @Get(':id')

@@ -17,6 +17,15 @@ export class ProductsService {
     createProductDto: CreateProductDto,
   ): Promise<{ message: string; data: Product }> {
     try {
+      // Parser les events si c'est une chaîne JSON
+      if (typeof createProductDto.events === 'string') {
+        try {
+          createProductDto.events = JSON.parse(createProductDto.events);
+        } catch (error) {
+          createProductDto.events = [];
+        }
+      }
+
       const createdProduct = new this.productModel(createProductDto);
       const savedProduct = await createdProduct.save();
       return {
@@ -39,6 +48,8 @@ export class ProductsService {
       const products = await this.productModel
         .find()
         .populate('category')
+        .populate('events')
+        .populate('commandes')
         .exec();
       return {
         message: 'Products retrieved successfully',
@@ -69,6 +80,8 @@ export class ProductsService {
       const product = await this.productModel
         .findById(id)
         .populate('category')
+        .populate('events')
+        .populate('commandes')
         .exec();
       if (!product) {
         throw new HttpException(
@@ -108,6 +121,15 @@ export class ProductsService {
       );
     }
     try {
+      // Parser les events si c'est une chaîne JSON
+      if (typeof updateProductDto.events === 'string') {
+        try {
+          updateProductDto.events = JSON.parse(updateProductDto.events);
+        } catch (error) {
+          updateProductDto.events = [];
+        }
+      }
+
       // Get the current product to check if it has images or video
       const currentProduct = await this.productModel.findById(id).exec();
       if (!currentProduct) {
@@ -152,6 +174,8 @@ export class ProductsService {
       const updatedProduct = await this.productModel
         .findByIdAndUpdate(id, updateProductDto, { new: true })
         .populate('category')
+        .populate('events')
+        .populate('commandes')
         .exec();
 
       if (!updatedProduct) {
