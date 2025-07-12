@@ -6,7 +6,8 @@ import { join } from 'path';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
-
+import path from 'path';
+import os from 'os';
 @Injectable()
 export class ProductsService {
   constructor(
@@ -150,7 +151,8 @@ export class ProductsService {
       ) {
         for (const oldImage of currentProduct.images) {
           try {
-            const oldImagePath = join(process.cwd(), oldImage);
+            const tempDir = os.tmpdir(); // Returns '/tmp' on Vercel
+            const oldImagePath = path.join(tempDir, oldImage);
             await unlink(oldImagePath);
           } catch (error) {
             console.log(
@@ -164,7 +166,8 @@ export class ProductsService {
       // If there's a new video and the product had an old video, delete the old one
       if (updateProductDto.video && currentProduct.video) {
         try {
-          const oldVideoPath = join(process.cwd(), currentProduct.video);
+          const tempDir = os.tmpdir(); // Returns '/tmp' on Vercel
+          const oldVideoPath = path.join(tempDir, currentProduct.video);
           await unlink(oldVideoPath);
         } catch (error) {
           console.log('Old video file not found or already deleted');
@@ -231,7 +234,8 @@ export class ProductsService {
       if (deletedProduct.images && deletedProduct.images.length > 0) {
         for (const image of deletedProduct.images) {
           try {
-            const imagePath = join(process.cwd(), image);
+            const tempDir = os.tmpdir(); // Returns '/tmp' on Vercel
+            const imagePath = path.join(tempDir, image);
             await unlink(imagePath);
           } catch (error) {
             console.log('Image file not found or already deleted:', image);
@@ -242,7 +246,8 @@ export class ProductsService {
       // Delete the associated video file if it exists
       if (deletedProduct.video) {
         try {
-          const videoPath = join(process.cwd(), deletedProduct.video);
+          const tempDir = os.tmpdir(); // Returns '/tmp' on Vercel
+          const videoPath = path.join(tempDir, deletedProduct.video);
           await unlink(videoPath);
         } catch (error) {
           console.log('Video file not found or already deleted');
