@@ -145,7 +145,7 @@ export class Event {
   certification?: boolean;
 
   @ApiProperty({ type: [String] })
-  @Prop({ type: Types.ObjectId, ref: 'Product', default: null })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }] })
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
