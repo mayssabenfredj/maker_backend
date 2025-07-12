@@ -7,8 +7,8 @@ import { Workshop, WorkshopDocument } from './entities/workshop.entity';
 import { Participant } from '../participants/entities/participant.entity';
 import { CreateParticipantDto } from '../participants/dto/create-participant.dto';
 import * as fs from 'fs';
-import * as path from 'path';
-
+import path from 'path';
+import os from 'os';
 @Injectable()
 export class WorkshopsService {
   constructor(
@@ -256,7 +256,8 @@ export class WorkshopsService {
     try {
       if (!imagePath) return;
 
-      const fullPath = path.join(process.cwd(), imagePath);
+      const tempDir = os.tmpdir(); // Returns '/tmp' on Vercel
+      const fullPath = path.join(tempDir, imagePath);
 
       // Check if file exists before deleting
       if (fs.existsSync(fullPath)) {
@@ -312,7 +313,10 @@ export class WorkshopsService {
 
       // Prevent duplicate registration by e-mail
       const existingParticipant = await this.participantModel
-        .findOne({ email: createParticipantDto.email, workshop: (workshop._id as any).toString() })
+        .findOne({
+          email: createParticipantDto.email,
+          workshop: (workshop._id as any).toString(),
+        })
         .exec();
       console.log('existingParticipant', {
         email: createParticipantDto.email,
