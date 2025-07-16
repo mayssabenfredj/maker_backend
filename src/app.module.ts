@@ -19,6 +19,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { BlogsModule } from './blogs/blogs.module';
 import { HeroSectionModule } from './hero-section/hero-section.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
+import { ShopModule } from './shop/shop.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { FileUploadModule } from './file-upload/file-upload.module';
     BlogsModule,
     HeroSectionModule,
     FileUploadModule,
+    ShopModule,
   ],
   controllers: [AppController],
   providers: [AppService],
