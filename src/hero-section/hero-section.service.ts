@@ -15,9 +15,11 @@ export class HeroSectionService {
     createHeroSectionDto: CreateHeroSectionDto,
   ): Promise<{ message: string; data: HeroSection }> {
     try {
-      createHeroSectionDto.buttons = JSON.parse(
-        createHeroSectionDto?.buttons as string,
-      );
+      if (createHeroSectionDto.buttons) {
+        createHeroSectionDto.buttons = JSON.parse(
+          createHeroSectionDto.buttons as string,
+        );
+      }
       const created = new this.heroSectionModel(createHeroSectionDto);
 
       const saved = await created.save();
