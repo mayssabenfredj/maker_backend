@@ -57,4 +57,7 @@ export class CreateOrderDto {
 
   @IsOptional()
   status?: string;
+
+  @IsOptional()
+  withFormation?: boolean;
 }

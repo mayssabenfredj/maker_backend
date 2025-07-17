@@ -53,6 +53,9 @@ export class Order extends Document {
 
   @Prop()
   status?: string;
+
+  @Prop({ default: false })
+  withFormation?: boolean;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

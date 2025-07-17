@@ -14,6 +14,12 @@ export class OrderService {
     createOrderDto: CreateOrderDto,
   ): Promise<{ message: string; data: Order }> {
     try {
+      // Calcul simple du totalPrice
+      let totalPrice = 0;
+      if (createOrderDto.unitPrice && createOrderDto.quantity) {
+        totalPrice = createOrderDto.unitPrice * createOrderDto.quantity;
+      }
+      createOrderDto.totalPrice = totalPrice;
       const created = new this.orderModel(createOrderDto);
       const saved = await created.save();
       return { message: 'Order created successfully', data: saved };

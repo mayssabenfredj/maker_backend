@@ -17,6 +17,9 @@ export class CommandeProduct extends Document {
 
   @Prop()
   message?: string;
+
+  @Prop({ default: false })
+  withFormation?: boolean;
 }
 
 export const CommandeProductSchema =
