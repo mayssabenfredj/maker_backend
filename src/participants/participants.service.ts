@@ -1,66 +1,80 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId } from 'mongoose';
-import { CreateParticipantDto } from './dto/create-participant.dto';
+import {
+  CreateParticipantDto,
+  RegisterForEventDto,
+} from './dto/create-participant.dto';
 import { UpdateParticipantDto } from './dto/update-participant.dto';
 import { Participant } from './entities/participant.entity';
+import { Event } from '../events/entities/event.entity';
 
 @Injectable()
 export class ParticipantsService {
   constructor(
     @InjectModel(Participant.name) private participantModel: Model<Participant>,
+    @InjectModel(Event.name) private eventModel: Model<Event>,
   ) {}
 
-  async create(createParticipantDto: CreateParticipantDto): Promise<{ message: string; data: Participant }> {
+  /**
+   * Returns an array of objects, each containing:
+   *   - eventId
+   *   - eventName
+   *   - price (or other event fields)
+   *   - event (full event document)
+   *   - participants: Participant[]
+   */
+  async findAll() {
     try {
-      // Validate that participant belongs to either event OR workshop, not both
-      if (createParticipantDto.event && createParticipantDto.workshop) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: 'Participant cannot belong to both an event and a workshop',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      if (!createParticipantDto.event && !createParticipantDto.workshop) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: 'Participant must belong to either an event or a workshop',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      const createdParticipant = new this.participantModel(createParticipantDto);
-      const savedParticipant = await createdParticipant.save();
-      return {
-        message: 'Participant created successfully',
-        data: savedParticipant,
-      };
-    } catch (error) {
-      throw new HttpException(
+      const result = await this.participantModel.aggregate([
         {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Failed to create participant: ' + error.message,
+          $match: {
+            event: { $exists: true },
+          },
         },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
+        {
+          $addFields: {
+            event: {
+              $convert: { input: '$event', to: 'objectId', onError: null },
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: 'events',
+            localField: 'event',
+            foreignField: '_id',
+            as: 'event',
+          },
+        },
+        { $unwind: '$event' },
+        {
+          $group: {
+            _id: '$event._id',
+            event: { $first: '$event' },
+            participants: { $push: '$$ROOT' },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            eventId: '$_id',
+            eventName: '$event.name',
+            price: '$event.price',
+            event: '$event',
+            participants: 1,
+          },
+        },
+      ]);
 
-  async findAll(): Promise<{ message: string; data: Participant[] }> {
-    try {
-      const participants = await this.participantModel
-        .find()
-        .populate('event')
-        .populate('workshop')
-        .exec();
       return {
-        message: 'Participants retrieved successfully',
-        data: participants,
+        message: 'Participants grouped by event',
+        data: result,
       };
     } catch (error) {
       throw new HttpException(
@@ -73,121 +87,29 @@ export class ParticipantsService {
     }
   }
 
-  async findOne(id: string): Promise<{ message: string; data: Participant }> {
-    if (!isValidObjectId(id)) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Invalid participant ID',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  async registerForEvent(dto: RegisterForEventDto) {
     try {
-      const participant = await this.participantModel
-        .findById(id)
-        .populate('event')
-        .populate('workshop')
-        .exec();
-      if (!participant) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.NOT_FOUND,
-            message: 'Participant not found',
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      return {
-        message: 'Participant retrieved successfully',
-        data: participant,
-      };
+      const { eventId, ...participantData } = dto;
+
+      const participant = await this.participantModel.create({
+        ...participantData,
+        event: eventId,
+      });
+
+      // push participant reference into Event.participants array (avoid duplicates)
+      await this.eventModel.findByIdAndUpdate(
+        eventId,
+        { $addToSet: { participants: participant._id } },
+        { new: true },
+      );
+
+      return participant;
     } catch (error) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Failed to retrieve participant: ' + error.message,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async update(id: string, updateParticipantDto: UpdateParticipantDto): Promise<{ message: string; data: Participant }> {
-    if (!isValidObjectId(id)) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Invalid participant ID',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    try {
-      const updatedParticipant = await this.participantModel
-        .findByIdAndUpdate(id, updateParticipantDto, { new: true })
-        .populate('event')
-        .populate('workshop')
-        .exec();
-
-      if (!updatedParticipant) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.NOT_FOUND,
-            message: 'Participant not found',
-          },
-          HttpStatus.NOT_FOUND,
-        );
+      if (error.code === 11000) {
+        // MongoDB duplicate key error
+        throw new ConflictException('Email already registered for this event');
       }
-
-      return {
-        message: 'Participant updated successfully',
-        data: updatedParticipant,
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Failed to update participant: ' + error.message,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  async remove(id: string): Promise<{ message: string; data: null }> {
-    if (!isValidObjectId(id)) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Invalid participant ID',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    try {
-      const deletedParticipant = await this.participantModel.findByIdAndDelete(id).exec();
-      if (!deletedParticipant) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.NOT_FOUND,
-            message: 'Participant not found',
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      return {
-        message: 'Participant deleted successfully',
-        data: null,
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Failed to delete participant: ' + error.message,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw error;
     }
   }
 }

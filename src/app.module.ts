@@ -10,7 +10,6 @@ import { CategoriesModule } from './categories/categories.module';
 import { BootcampsModule } from './bootcamps/bootcamps.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ServicesModule } from './services/services.module';
-import { WorkshopsModule } from './workshops/workshops.module';
 import { EventsModule } from './events/events.module';
 import { ParticipantsModule } from './participants/participants.module';
 import { AuthModule } from './auth/auth.module';
@@ -49,7 +48,6 @@ import { ShopModule } from './shop/shop.module';
     ProjectsModule,
     ServicesModule,
     FileUploadModule,
-    WorkshopsModule,
     EventsModule,
     ParticipantsModule,
     AuthModule,

@@ -5,7 +5,6 @@ import {
   IsEmail,
   IsDateString,
   IsMongoId,
-  ValidateIf,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -31,6 +30,11 @@ export class CreateParticipantDto {
   phone?: string;
 
   @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  organizationName?: string;
+
+  @ApiPropertyOptional()
   @IsDateString()
   @IsOptional()
   dateOfBirth?: string;
@@ -49,17 +53,11 @@ export class CreateParticipantDto {
   @IsString()
   @IsOptional()
   country?: string;
+}
 
-  // Participant can belong to either an event OR a workshop, not both
-  @ApiPropertyOptional({ type: String, description: 'Event ID' })
+export class RegisterForEventDto extends CreateParticipantDto {
+  @ApiProperty({ description: 'Event ID' })
   @IsMongoId()
-  @IsOptional()
-  @ValidateIf((o) => !o.workshop) // Only validate if workshop is not provided
-  event?: string;
-
-  @ApiPropertyOptional({ type: String, description: 'Workshop ID' })
-  @IsMongoId()
-  @IsOptional()
-  @ValidateIf((o) => !o.event) // Only validate if event is not provided
-  workshop?: string;
+  @IsNotEmpty()
+  eventId: string;
 }
