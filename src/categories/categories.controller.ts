@@ -27,7 +27,6 @@ export class CategoriesController {
     console.log('query', type);
     return this.categoriesService.findAll(type);
   }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoriesService.findOne(id);

@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  Query,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import {
@@ -48,8 +47,8 @@ export class EventsController {
     description: 'List of all events.',
     type: [EventResponseDto],
   })
-  findAll(@Query('type') type?: 'workshop' | 'bootcamp' | 'event' | 'course') {
-    return this.eventsService.findAll(type);
+  findAll() {
+    return this.eventsService.findAll();
   }
 
   @Get(':id')

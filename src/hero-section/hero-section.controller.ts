@@ -7,9 +7,9 @@ import {
   Param,
   Delete,
   UseInterceptors,
-  UploadedFiles,
+  UploadedFile,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { HeroSectionService } from './hero-section.service';
@@ -22,7 +22,7 @@ export class HeroSectionController {
 
   @Post()
   @UseInterceptors(
-    FilesInterceptor('images', 1, {
+    FileInterceptor('image', {
       storage: diskStorage({
         destination: './uploads/hero-section',
         filename: (_req, file, cb) => {
@@ -42,13 +42,11 @@ export class HeroSectionController {
     }),
   )
   async create(
-    @UploadedFiles() images: Express.Multer.File[],
+    @UploadedFile() image: Express.Multer.File,
     @Body() createHeroSectionDto: CreateHeroSectionDto,
   ) {
-    if (images && images.length > 0) {
-      createHeroSectionDto.images = images.map(
-        (file) => `/uploads/hero-section/${file.filename}`,
-      );
+    if (image) {
+      createHeroSectionDto.image = `/uploads/hero-section/${image.filename}`;
     }
     return this.heroSectionService.create(createHeroSectionDto);
   }
@@ -65,7 +63,7 @@ export class HeroSectionController {
 
   @Patch(':id')
   @UseInterceptors(
-    FilesInterceptor('images', 1, {
+    FileInterceptor('image', {
       storage: diskStorage({
         destination: './uploads/hero-section',
         filename: (_req, file, cb) => {
@@ -86,13 +84,11 @@ export class HeroSectionController {
   )
   async update(
     @Param('id') id: string,
-    @UploadedFiles() images: Express.Multer.File[],
+    @UploadedFile() image: Express.Multer.File,
     @Body() updateHeroSectionDto: UpdateHeroSectionDto,
   ) {
-    if (images && images.length > 0) {
-      updateHeroSectionDto.images = images.map(
-        (file) => `/uploads/hero-section/${file.filename}`,
-      );
+    if (image) {
+      updateHeroSectionDto.image = `/uploads/hero-section/${image.filename}`;
     }
     return this.heroSectionService.update(id, updateHeroSectionDto);
   }

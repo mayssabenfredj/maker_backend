@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, IsArray } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 class HeroButtonDto {
   @IsString()
@@ -13,16 +13,23 @@ class HeroButtonDto {
 export class CreateHeroSectionDto {
   @IsString()
   @IsNotEmpty()
+  type: string;
+
+  @IsString()
+  @IsNotEmpty()
   title: string;
+
+  @IsString()
+  @IsNotEmpty()
+  subtitle: string;
 
   @IsString()
   @IsNotEmpty()
   description: string;
 
-  @IsArray()
-  @IsString({ each: true })
+  @IsString()
   @IsOptional()
-  images?: string[];
+  image?: string;
 
   @IsOptional()
   buttons?: string;

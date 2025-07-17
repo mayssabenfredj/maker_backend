@@ -40,16 +40,10 @@ export class EventsService {
     }
   }
 
-  async findAll(
-    type?: 'workshop' | 'bootcamp' | 'event' | 'course',
-  ): Promise<{ message: string; data: Event[] }> {
+  async findAll(): Promise<{ message: string; data: Event[] }> {
     try {
-      const query: any = {};
-      if (type) {
-        query.type = type;
-      }
       const events = await this.eventModel
-        .find(query)
+        .find()
         .populate('participants')
         .populate('category')
         .exec();
