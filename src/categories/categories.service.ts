@@ -35,6 +35,7 @@ export class CategoriesService {
   async findAll(type?: string): Promise<{ message: string; data: Category[] }> {
     try {
       let categories: Category[];
+      console.log('type', type);
       if (!type) {
         categories = await this.categoryModel.find().exec();
       } else {

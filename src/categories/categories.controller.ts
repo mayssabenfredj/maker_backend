@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -26,11 +27,11 @@ export class CategoriesController {
     return this.categoriesService.findAll();
   }
 
-  @Get(':type')
-  findAllByType(@Param('type') type: string) {
+  @Get() // no :type here
+  findAllByType(@Query('type') type?: string) {
+    console.log('findAllByType', type); // prints “event” for …/categories?type=event
     return this.categoriesService.findAll(type);
   }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoriesService.findOne(id);
