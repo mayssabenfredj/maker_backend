@@ -50,7 +50,6 @@ export class ProductsService {
         .find()
         .populate('category')
         .populate('events')
-        .populate('commandes')
         .exec();
       return {
         message: 'Products retrieved successfully',
@@ -82,7 +81,6 @@ export class ProductsService {
         .findById(id)
         .populate('category')
         .populate('events')
-        .populate('commandes')
         .exec();
       if (!product) {
         throw new HttpException(
