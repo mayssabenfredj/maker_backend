@@ -10,6 +10,7 @@ import {
   UploadedFiles,
   BadRequestException,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/project.dto';
@@ -17,11 +18,13 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(
     FilesInterceptor('coverImage', 1, {
@@ -76,6 +79,7 @@ export class ProjectsController {
     return this.projectsService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
     if (typeof updateProjectDto?.technologies === 'string') {
@@ -90,6 +94,7 @@ export class ProjectsController {
     return this.projectsService.update(id, updateProjectDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.projectsService.remove(id);

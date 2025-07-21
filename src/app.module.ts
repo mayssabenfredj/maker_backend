@@ -18,6 +18,7 @@ import { BlogsModule } from './blogs/blogs.module';
 import { HeroSectionModule } from './hero-section/hero-section.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { ShopModule } from './shop/shop.module';
+import { StaticModule } from './static/static.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { ShopModule } from './shop/shop.module';
     HeroSectionModule,
     FileUploadModule,
     ShopModule,
+    StaticModule,
   ],
   controllers: [AppController],
   providers: [AppService],

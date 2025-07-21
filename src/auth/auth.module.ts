@@ -6,20 +6,22 @@ import { User, UserSchema } from './entities/user.entity';
 import { UserSeederService } from './user.seeder.service';
 import { DevUserController } from './dev.user.controller';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'your-secret-key', // Use environment variable in production
-      signOptions: { expiresIn: '60m' }, // Token expires in 60 minutes
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      signOptions: { expiresIn: '1d' },
     }),
   ],
   controllers: [
     AuthController,
     ...(process.env.NODE_ENV !== 'production' ? [DevUserController] : []),
   ],
-  providers: [UserService, UserSeederService],
-  exports: [UserService],
+  providers: [UserService, UserSeederService, JwtAuthGuard, JwtStrategy],
+  exports: [UserService, JwtModule, JwtAuthGuard],
 })
 export class AuthModule {}

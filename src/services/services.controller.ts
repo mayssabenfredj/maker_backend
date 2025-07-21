@@ -9,6 +9,7 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -30,12 +31,14 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { Service } from './entities/service.entity';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('Services')
 @Controller('services')
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
@@ -140,6 +143,7 @@ export class ServicesController {
     return this.servicesService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @UseInterceptors(
     FileInterceptor('image', {
@@ -203,6 +207,7 @@ export class ServicesController {
     return this.servicesService.update(id, updateServiceDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete service' })
   @ApiParam({ name: 'id', description: 'Service ID' })
