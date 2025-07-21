@@ -112,6 +112,15 @@ export class CreateEventDto {
   @IsNotEmpty()
   name: string;
 
+  @ApiProperty({
+    description: 'Name of the event',
+    example: 'Advanced JavaScript Workshop',
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+  description?: string;
+
   @ApiPropertyOptional({
     description: 'Price of the event',
     example: 99.99,

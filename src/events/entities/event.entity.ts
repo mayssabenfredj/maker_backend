@@ -162,6 +162,11 @@ export class Event {
   @IsString()
   coverImage: string;
 
+  @ApiProperty()
+  @Prop({ required: false })
+  @IsString()
+  description?: string;
+
   @ApiProperty({ type: [String] })
   @Prop({ type: [Types.ObjectId], ref: 'Participant', default: [] })
   @IsOptional()
