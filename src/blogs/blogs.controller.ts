@@ -8,6 +8,7 @@ import {
   Delete,
   UseInterceptors,
   UploadedFiles,
+  UseGuards,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -15,11 +16,13 @@ import { extname } from 'path';
 import { BlogsService } from './blogs.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -70,7 +73,7 @@ export class BlogsController {
         (file) => `/uploads/blogs/${file.filename}`,
       );
     }
-    
+
     return this.blogsService.create(createBlogDto);
   }
 
@@ -84,6 +87,7 @@ export class BlogsController {
     return this.blogsService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -135,10 +139,11 @@ export class BlogsController {
         (file) => `/uploads/blogs/${file.filename}`,
       );
     }
-   
+
     return this.blogsService.update(id, updateBlogDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.blogsService.remove(id);
