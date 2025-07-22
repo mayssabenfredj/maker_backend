@@ -176,7 +176,6 @@ export class ProductsService {
         .findByIdAndUpdate(id, updateProductDto, { new: true })
         .populate('category')
         .populate('events')
-        .populate('commandes')
         .exec();
 
       if (!updatedProduct) {
