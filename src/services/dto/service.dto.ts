@@ -190,8 +190,10 @@ export class UpdateServiceDto {
     type: [String],
     required: false,
   })
-  @IsArray()
-  @IsMongoId({ each: true })
+  @Transform(({ value }) => {
+    if (!value) return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
   @IsOptional()
   projects?: string[];
 
@@ -200,8 +202,10 @@ export class UpdateServiceDto {
     type: [String],
     required: false,
   })
-  @IsArray()
-  @IsMongoId({ each: true })
+  @Transform(({ value }) => {
+    if (!value) return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
   @IsOptional()
   products?: string[];
 
@@ -210,8 +214,10 @@ export class UpdateServiceDto {
     type: [String],
     required: false,
   })
-  @IsArray()
-  @IsMongoId({ each: true })
+  @Transform(({ value }) => {
+    if (!value) return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
   @IsOptional()
   events?: string[];
 
@@ -242,15 +248,6 @@ export class UpdateServiceDto {
   @IsOptional()
   provider?: string;
 
-  @ApiProperty({
-    description: 'Service image URL',
-    example: 'https://example.com/updated-service-image.jpg',
-    required: false,
-  })
-  @IsUrl()
-  @IsOptional()
-  imageUrl?: string;
-
   @ApiPropertyOptional({
     description: 'Relative path of the uploaded service image',
     example: '/uploads/services/abc123.jpg',
@@ -263,6 +260,10 @@ export class UpdateServiceDto {
     description: 'Whether the service is active',
     example: false,
     required: false,
+  })
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    return value === 'true' || value === true || value === 1 || value === '1';
   })
   @IsBoolean()
   @IsOptional()

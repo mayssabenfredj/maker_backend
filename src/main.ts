@@ -8,7 +8,12 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: ['*','http://makerskills.tn', 'https://makerskills.tn'],
+    origin: [
+      '*',
+      'http://makerskills.tn',
+      'https://makerskills.tn',
+      'http://localhost:5173',
+    ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
