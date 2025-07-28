@@ -118,7 +118,7 @@ export class CreateEventDto {
     required: true,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   description?: string;
 
   @ApiPropertyOptional({

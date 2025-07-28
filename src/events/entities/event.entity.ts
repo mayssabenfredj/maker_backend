@@ -165,6 +165,7 @@ export class Event {
   @ApiProperty()
   @Prop({ required: false })
   @IsString()
+  @IsOptional()
   description?: string;
 
   @ApiProperty({ type: [String] })
