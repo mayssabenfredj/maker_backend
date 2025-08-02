@@ -12,6 +12,7 @@ async function bootstrap() {
       '*',
       'http://makerskills.tn',
       'https://makerskills.tn',
+      'https://makerskills.tn/',
       'http://localhost:5173',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
