@@ -33,5 +33,5 @@ export class CreateProjectDto {
 
   @IsString()
   @IsNotEmpty()
-  categories: string;
+  categories?: string;
 }

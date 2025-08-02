@@ -15,18 +15,7 @@ export class ProjectsService {
     createProjectDto: CreateProjectDto,
   ): Promise<{ message: string; data: Project }> {
     try {
-      // Validate required fields for embedded systems projects
-
-      if (
-        !createProjectDto.categories ||
-        createProjectDto.categories.length === 0
-      ) {
-        throw new HttpException(
-          'At least one category must be specified for the project',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
+      // Validate required fields for embedded systems projects 
       const createdProject = new this.projectModel({
         ...createProjectDto,
       });

@@ -11,6 +11,7 @@ import {
   BadRequestException,
   UseInterceptors,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/project.dto';
@@ -81,16 +82,27 @@ export class ProjectsController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
+  update(
+    @Param('id') id: string,
+    @Body(new ValidationPipe({ transform: true })) updateProjectDto: UpdateProjectDto,
+  ) {
+    // Parse stringified fields
     if (typeof updateProjectDto?.technologies === 'string') {
-      updateProjectDto.technologies = JSON.parse(
-        updateProjectDto?.technologies,
-      );
+      try {
+        updateProjectDto.technologies = JSON.parse(updateProjectDto.technologies);
+      } catch (e) {
+        throw new BadRequestException('Invalid JSON format for technologies');
+      }
     }
-
     if (typeof updateProjectDto?.categories === 'string') {
-      updateProjectDto.categories = JSON.parse(updateProjectDto?.categories);
+      try {
+        updateProjectDto.categories = JSON.parse(updateProjectDto.categories);
+      } catch (e) {
+        throw new BadRequestException('Invalid JSON format for categories');
+      }
     }
+    console.log('updateProjectDto:', updateProjectDto);
+    console.log('id:', id);
     return this.projectsService.update(id, updateProjectDto);
   }
 

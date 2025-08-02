@@ -10,6 +10,7 @@ import {
   IsString,
   ValidateNested,
   IsMongoId,
+  IsDateString,
 } from 'class-validator';
 
 @Schema({ timestamps: true, strict: true })
@@ -106,10 +107,26 @@ export class Event {
   @IsString()
   duration?: string;
 
+  // Changed from startDate to dateDebut to match payload
   @ApiProperty()
   @Prop()
   @IsOptional()
-  startDate?: Date;
+  @IsDateString()
+  dateDebut?: Date;
+
+  // Added periode field from payload
+  @ApiProperty()
+  @Prop()
+  @IsOptional()
+  @IsString()
+  periode?: string;
+
+  // Added animator field from payload
+  @ApiProperty()
+  @Prop()
+  @IsOptional()
+  @IsString()
+  animator?: string;
 
   @ApiProperty({ type: [String] })
   @Prop({ type: [String] })

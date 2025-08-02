@@ -44,7 +44,7 @@ export class Project extends Document {
     type: [String],
   })
   @Prop({ type: [Types.ObjectId], ref: 'Category', required: true })
-  categories: Category[] | Types.ObjectId[];
+  categories?: Category[] | Types.ObjectId[];
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);
