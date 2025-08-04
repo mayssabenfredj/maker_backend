@@ -5,7 +5,7 @@ import { Event } from '../../events/entities/event.entity';
 /**
  * Participant Entity
  * A participant can join multiple events and workshops
- * But can only join each specific event/workshop once (enforced by email uniqueness per event/workshop)
+ * But can only join each specific event/workshop once (enforced by service logic)
  */
 @Schema({ timestamps: true })
 export class Participant extends Document {
@@ -49,12 +49,6 @@ export class Participant extends Document {
 
 export const ParticipantSchema = SchemaFactory.createForClass(Participant);
 
-// Ensure a participant email is unique within the same event
-ParticipantSchema.index(
-  { email: 1, event: 1 },
-  {
-    unique: true,
-    partialFilterExpression: { event: { $exists: true } },
-    name: 'unique_email_per_event',
-  },
-);
+// Optional: Add compound index for better query performance
+// This index improves query speed but doesn't enforce uniqueness
+ParticipantSchema.index({ email: 1, event: 1 });
