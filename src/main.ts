@@ -6,9 +6,18 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS for all domains
+  // Enable CORS
   app.enableCors({
-    origin: true, // Permet toutes les origines
+    origin: [
+      '*',
+      'http://makerskills.tn',
+      'https://makerskills.tn',
+      'https://makerskills.tn/',
+      'http://www.makerskills.tn',
+      'https://www.makerskills.tn',
+      'https://www.makerskills.tn/',
+      'http://localhost:5173',
+    ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
