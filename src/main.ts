@@ -39,7 +39,7 @@ async function bootstrap() {
   });
 
   // Listen LAST
-  await app.listen(process.env.PORT ?? 3020, '0.0.0.0');
+  await app.listen(3020, '0.0.0.0');
 
   console.log(
     `Application is running on: http://localhost:${process.env.PORT ?? 3020}`,
