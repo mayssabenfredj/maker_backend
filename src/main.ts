@@ -9,14 +9,9 @@ async function bootstrap() {
   // Enable CORS
   app.enableCors({
     origin: [
-      '*',
-      'http://makerskills.tn',
+      'https://localhost:5173',
       'https://makerskills.tn',
-      'https://makerskills.tn/',
-      'http://www.makerskills.tn',
       'https://www.makerskills.tn',
-      'https://www.makerskills.tn/',
-      'http://localhost:5173',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -44,7 +39,7 @@ async function bootstrap() {
   });
 
   // Listen LAST
-  await app.listen(process.env.PORT ?? 3020);
+  await app.listen(process.env.PORT ?? 3020, '0.0.0.0');
 
   console.log(
     `Application is running on: http://localhost:${process.env.PORT ?? 3020}`,
