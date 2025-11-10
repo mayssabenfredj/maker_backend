@@ -6,25 +6,26 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-app.enableCors({
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://makerskills.tn',
-      'https://www.makerskills.tn',
-      'https://localhost:5173'
-    ];
+  app.enableCors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'https://makerskills.tn',
+        'https://www.makerskills.tn',
+        'http://localhost:5173',
+        'http://92.222.139.156:5173',
+      ];
 
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`Blocked by CORS: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-});
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`Blocked by CORS: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
 
   // Set up global pipes BEFORE listening
