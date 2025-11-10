@@ -32,15 +32,15 @@ import { StaticModule } from './static/static.module';
     }),
     MongooseModule.forRootAsync({
       useFactory: () => {
-        console.log('MONGODB_USER:', process.env.MONGODB_USER);
-        console.log('MONGODB_PASSWORD:', process.env.MONGODB_PASSWORD);
+        console.log('MONGODB_USER:', "maker");
+        console.log('MONGODB_PASSWORD:', "maker_skills");
         return {
-          uri: `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@makerskills.ad4zvlg.mongodb.net/?retryWrites=true&w=majority&appName=makerskills`,
+          uri: `mongodb+srv://${"maker"}:${"maker_skills"}@makerskills.ad4zvlg.mongodb.net/?retryWrites=true&w=majority&appName=makerskills`,
         };
       },
     }),
     MongooseModule.forRoot(
-      `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@makerskills.ad4zvlg.mongodb.net/?retryWrites=true&w=majority&appName=makerskills`,
+      `mongodb+srv://${"maker"}:${"maker_skills"}@makerskills.ad4zvlg.mongodb.net/?retryWrites=true&w=majority&appName=makerskills`,
     ),
     ProductsModule,
     CategoriesModule,
