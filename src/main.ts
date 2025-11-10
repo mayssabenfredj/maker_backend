@@ -9,10 +9,7 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        'https://makerskills.tn',
-        'https://www.makerskills.tn',
-        'http://localhost:5173',
-        'http://92.222.139.156:5173',
+       '*'
       ];
 
       if (!origin || allowedOrigins.includes(origin)) {
