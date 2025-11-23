@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join, resolve } from 'path';
+import { existsSync } from 'fs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -21,19 +22,46 @@ import { ShopModule } from './shop/shop.module';
 import { StaticModule } from './static/static.module';
 import { UploadsModule } from './uploads/uploads.module';
 
-// Fonction pour obtenir le chemin de la racine du projet
-function getProjectRoot(): string {
-  // En développement: __dirname = src
-  // En production: __dirname = dist
-  const currentDir = __dirname;
+// Fonction pour obtenir le chemin du dossier uploads
+function getUploadsPath(): string {
+  // Méthode 1: Utiliser process.cwd() qui devrait pointer vers ~/backend en production
+  const cwd = process.cwd();
+  let uploadsPath = resolve(cwd, 'uploads');
   
-  // Si on est dans dist/, remonter à la racine
-  if (currentDir.includes('dist')) {
-    return resolve(currentDir, '..');
+  // Si process.cwd() pointe vers dist/, remonter d'un niveau
+  if (cwd.includes('dist')) {
+    uploadsPath = resolve(cwd, '..', 'uploads');
   }
   
-  // Sinon, on est en développement, remonter de src à la racine
-  return resolve(currentDir, '..');
+  // Vérifier si ce chemin existe
+  if (existsSync(uploadsPath)) {
+    return uploadsPath;
+  }
+  
+  // Méthode 2: Utiliser __dirname pour remonter à la racine
+  const currentDir = __dirname;
+  if (currentDir.includes('dist')) {
+    // En production: __dirname = dist
+    uploadsPath = resolve(currentDir, '..', 'uploads');
+  } else {
+    // En développement: __dirname = src
+    uploadsPath = resolve(currentDir, '..', 'uploads');
+  }
+  
+  // Méthode 3: Chemin absolu basé sur le home directory (pour production)
+  // Si on est sur Linux et que process.cwd() est dans ~/backend
+  if (process.platform !== 'win32') {
+    const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+    if (homeDir) {
+      const homeUploadsPath = resolve(homeDir, 'backend', 'uploads');
+      if (existsSync(homeUploadsPath)) {
+        return homeUploadsPath;
+      }
+    }
+  }
+  
+  // Par défaut, retourner le chemin basé sur process.cwd()
+  return resolve(process.cwd().includes('dist') ? resolve(process.cwd(), '..') : process.cwd(), 'uploads');
 }
 
 @Module({
@@ -43,7 +71,7 @@ function getProjectRoot(): string {
       envFilePath: ['.env', '.env.local'], // Load environment variables from these files
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(getProjectRoot(), 'uploads'),
+      rootPath: getUploadsPath(),
       serveRoot: '/uploads',
       serveStaticOptions: {
         index: false, // Ne pas servir index.html par défaut
