@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -19,6 +19,22 @@ import { HeroSectionModule } from './hero-section/hero-section.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { ShopModule } from './shop/shop.module';
 import { StaticModule } from './static/static.module';
+import { UploadsModule } from './uploads/uploads.module';
+
+// Fonction pour obtenir le chemin de la racine du projet
+function getProjectRoot(): string {
+  // En développement: __dirname = src
+  // En production: __dirname = dist
+  const currentDir = __dirname;
+  
+  // Si on est dans dist/, remonter à la racine
+  if (currentDir.includes('dist')) {
+    return resolve(currentDir, '..');
+  }
+  
+  // Sinon, on est en développement, remonter de src à la racine
+  return resolve(currentDir, '..');
+}
 
 @Module({
   imports: [
@@ -27,8 +43,11 @@ import { StaticModule } from './static/static.module';
       envFilePath: ['.env', '.env.local'], // Load environment variables from these files
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
+      rootPath: join(getProjectRoot(), 'uploads'),
       serveRoot: '/uploads',
+      serveStaticOptions: {
+        index: false, // Ne pas servir index.html par défaut
+      },
     }),
     MongooseModule.forRootAsync({
       useFactory: () => {
@@ -57,6 +76,7 @@ import { StaticModule } from './static/static.module';
     FileUploadModule,
     ShopModule,
     StaticModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
